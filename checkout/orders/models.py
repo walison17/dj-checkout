@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 
 from model_utils.models import TimeStampedModel, UUIDModel
 
@@ -31,6 +32,12 @@ class Order(UUIDModel, TimeStampedModel):
 
     def __str__(self):
         return str(self.id)
+
+    def calculate_amount(self):
+        expression = ExpressionWrapper(
+            F('quantity') * F('unit_price'), output_field=DecimalField()
+        )
+        return self.items.aggregate(amount=Sum(expression))['amount']
 
 
 class Item(TimeStampedModel):
