@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.db.models import Sum
+from django.db.models import Sum, F, ExpressionWrapper, DecimalField
 
 from .models import Order, Item
 
@@ -21,6 +21,9 @@ class OrderAdmin(admin.ModelAdmin):
         super().save_related(request, form, formsets, change)
 
         if not change:
-            aggregate = form.instance.items.aggregate(Sum('unit_price'))
-            form.instance.amount = aggregate['unit_price__sum']
+            expression = ExpressionWrapper(
+                F('quantity') * F('unit_price'), output_field=DecimalField()
+            )
+            aggregate = form.instance.items.aggregate(amount=expression)
+            form.instance.amount = aggregate['amount']
             form.save()
