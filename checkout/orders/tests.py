@@ -18,3 +18,11 @@ class TestOrderModel(TestCase):
         self.assertTrue(
             self.order.calculate_amount().compare(Decimal(4.2))
         )
+
+
+class TestItemModel(TestCase):
+    def test_set_unit_price_on_save(self):
+        service = baker.make('services.Service')
+        item = baker.make(Item, quantity=2, service=service)
+
+        self.assertEqual(item.unit_price, service.price)
