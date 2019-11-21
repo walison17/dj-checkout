@@ -67,5 +67,7 @@ class Item(TimeStampedModel):
         return f'{self.quantity}x {self.service}'
 
     def save(self, *args, **kwargs):
-        self.unit_price = self.service.price
+        if not self.pk:
+            self.unit_price = self.service.price
+
         return super().save(*args, **kwargs)

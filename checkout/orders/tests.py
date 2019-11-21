@@ -21,8 +21,25 @@ class TestOrderModel(TestCase):
 
 
 class TestItemModel(TestCase):
-    def test_set_unit_price_on_save(self):
-        service = baker.make('services.Service')
-        item = baker.make(Item, quantity=2, service=service)
+    def setUp(self):
+        self.service = baker.make('services.Service', price=Decimal(8))
 
-        self.assertEqual(item.unit_price, service.price)
+    def test_set_unit_price_on_save(self):
+        item = baker.make(Item, quantity=2, service=self.service)
+
+        self.assertEqual(item.unit_price, self.service.price)
+
+    def test_must_not_update_unit_price_when_item_is_already_created(self):
+        item = baker.make(Item, quantity=2, service=self.service)
+
+        original_price = self.service.price
+
+        # set new service price
+        self.service.price = Decimal(8.5)
+        self.service.save()
+
+        # update item quantity
+        item.quantity = 2
+        item.save()
+
+        self.assertEqual(item.unit_price, original_price)
